@@ -16,7 +16,6 @@ CONTAINER_ID="${CONTAINER_ID:-dvm-test}"
 type="${type:-tests/defaults}"
 distro="${distro:-ubuntu1604}"
 cleanup="${cleanup:-true}"
-easy_install_cmd=${easy_install_cmd:-easy_install}
 
 ## Set up vars for Docker setup.
 # CentOS 7
@@ -94,9 +93,12 @@ docker exec $CONTAINER_ID cp $DRUPALVM_DIR/$COMPOSERFILE ${config_dir:-$DRUPALVM
 printf "\n"${green}"Checking playbook syntax..."${neutral}"\n"
 docker exec --tty $CONTAINER_ID env TERM=xterm ansible-playbook $DRUPALVM_DIR/provisioning/playbook.yml --syntax-check
 
-# Run Ansible Lint.
-docker exec $CONTAINER_ID bash -c "$easy_install_cmd ansible-lint"
-docker exec $CONTAINER_ID bash -c "cd $DRUPALVM_DIR/provisioning && ansible-lint playbook.yml" || true
+# Run Ansible Lint on all OSes besides Ubuntu 18.04.
+# See: https://bugs.launchpad.net/ubuntu/+source/python-setuptools/+bug/1774419
+if [ ! $distro = 'ubuntu1804' ]; then
+  docker exec $CONTAINER_ID bash -c "easy_install ansible-lint"
+  docker exec $CONTAINER_ID bash -c "cd $DRUPALVM_DIR/provisioning && ansible-lint playbook.yml" || true
+fi
 
 # Run the setup playbook.
 printf "\n"${green}"Running the setup playbook..."${neutral}"\n"
