@@ -16,6 +16,7 @@ CONTAINER_ID="${CONTAINER_ID:-dvm-test}"
 type="${type:-tests/defaults}"
 distro="${distro:-ubuntu1604}"
 cleanup="${cleanup:-true}"
+easy_install_cmd=${easy_install_cmd:-easy_install}
 
 ## Set up vars for Docker setup.
 # CentOS 7
@@ -94,7 +95,7 @@ printf "\n"${green}"Checking playbook syntax..."${neutral}"\n"
 docker exec --tty $CONTAINER_ID env TERM=xterm ansible-playbook $DRUPALVM_DIR/provisioning/playbook.yml --syntax-check
 
 # Run Ansible Lint.
-docker exec $CONTAINER_ID bash -c "easy_install ansible-lint"
+docker exec $CONTAINER_ID bash -c "$easy_install_cmd ansible-lint"
 docker exec $CONTAINER_ID bash -c "cd $DRUPALVM_DIR/provisioning && ansible-lint playbook.yml" || true
 
 # Run the setup playbook.
